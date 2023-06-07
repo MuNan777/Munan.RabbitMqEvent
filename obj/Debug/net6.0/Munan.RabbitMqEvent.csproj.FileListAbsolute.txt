@@ -1,0 +1,12 @@
+D:\Test\vs\Munan.RabbitMqEvent\bin\Debug\net6.0\Munan.RabbitMqEvent.deps.json
+D:\Test\vs\Munan.RabbitMqEvent\bin\Debug\net6.0\Munan.RabbitMqEvent.dll
+D:\Test\vs\Munan.RabbitMqEvent\bin\Debug\net6.0\Munan.RabbitMqEvent.pdb
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\Munan.RabbitMqEvent.csproj.AssemblyReference.cache
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\Munan.RabbitMqEvent.GeneratedMSBuildEditorConfig.editorconfig
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\Munan.RabbitMqEvent.AssemblyInfoInputs.cache
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\Munan.RabbitMqEvent.AssemblyInfo.cs
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\Munan.RabbitMqEvent.csproj.CoreCompileInputs.cache
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\Munan.RabbitMqEvent.dll
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\refint\Munan.RabbitMqEvent.dll
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\Munan.RabbitMqEvent.pdb
+D:\Test\vs\Munan.RabbitMqEvent\obj\Debug\net6.0\ref\Munan.RabbitMqEvent.dll
