@@ -19,11 +19,15 @@ internal class MqConsumeHostedService : BackgroundService
 
   private readonly Dictionary<string, Type> _paramTypeMap;
 
+  private readonly object sync_root = new();
+
 
   // 用于保存 MethodInfo
   private readonly Dictionary<string, List<ConsumeHandleItem>> _consumeHandle;
 
   private readonly IServiceProvider _serviceProvider;
+
+
 
   public MqConsumeHostedService(
       ConnectionFactory connectionFactory,
@@ -40,21 +44,52 @@ internal class MqConsumeHostedService : BackgroundService
     _paramTypeMap = paramTypeMap;
   }
 
+  public IModel CreateModel()
+  {
+    if (_connection != null && _connection.IsOpen)
+    {
+      return _connection.CreateModel();
+    }
+    throw new InvalidOperationException("No RabbitMQ connections are available to perform this action");
+  }
+
 
   private void InitRabbitMq()
   {
-    _connection = _connectionFactory.CreateConnection();
-    _channel = _connection.CreateModel();
-    // 设置消息的持久性
-    var properties = _channel.CreateBasicProperties();
-    properties.DeliveryMode = 2; // 持久化到磁盘上
+    if (TryConnect())
+    {
+      _channel = CreateModel();
+      // 设置消息的持久性
+      var properties = _channel.CreateBasicProperties();
+      properties.DeliveryMode = 2; // 持久化到磁盘上
 
-    var exchange = _options.ExchangeName;
-    var queue = _options.QueueName;
-    var routingKey = _options.RoutingKey;
-    _channel.ExchangeDeclare(exchange, type: "direct"); // 声明交换机
-    _channel.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
-    _channel.QueueBind(queue, exchange, routingKey);
+      var exchange = _options.ExchangeName;
+      var queue = _options.QueueName;
+      var routingKey = _options.RoutingKey;
+      _channel.ExchangeDeclare(exchange, type: "direct"); // 声明交换机
+      _channel.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
+      _channel.QueueBind(queue, exchange, routingKey);
+    }
+  }
+
+  public bool TryConnect()
+  {
+    lock (sync_root)
+    {
+      _connection = _connectionFactory.CreateConnection();
+
+      if (_connection != null && _connection.IsOpen)
+      {
+        _connection.ConnectionShutdown += (object? sender, ShutdownEventArgs reason) => { TryConnect(); };
+        _connection.CallbackException += (object? sender, CallbackExceptionEventArgs reason) => { TryConnect(); };
+        _connection.ConnectionBlocked += (object? sender, ConnectionBlockedEventArgs reason) => { TryConnect(); };
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
   }
 
   protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -77,16 +112,16 @@ internal class MqConsumeHostedService : BackgroundService
             {
               var data = JsonSerializer.Deserialize(dataOrg, paramType);
               list.ForEach(item =>
-                    {
-                        object handleInstance = _serviceProvider.GetRequiredService(item.Type);
-                        if (data != null)
-                        {
-                          Task.Run(() =>
-                                {
+                          {
+                            object handleInstance = _serviceProvider.GetRequiredService(item.Type);
+                            if (data != null)
+                            {
+                              Task.Run(() =>
+                              {
                                 item.Action.Invoke(handleInstance, new object[] { data });
                               });
-                        }
-                      });
+                            }
+                          });
             }
           };
 
